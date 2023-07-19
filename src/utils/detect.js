@@ -33,19 +33,14 @@ export const detectImage = async (
       scoreThreshold, // score threshold
     ])
   ); // nms config tensor
+  
   const { output0 } = await session.net.run({ images: tensor }); // run session and get output layer
-  console.log(output0);
-  // slice first 5 values for each row
-  // const besco = output0.data.slice([0, 0, 0], [-1, 5, -1]);
-  const slicedTensor = output0.slice([0, 0, 0], [1, 5, 8400]);
-  // const slicedData = slicedTensor.data;
-
-  console.log(slicedTensor);
-
-  const { selected } = await session.nms.run({ detection: output0, config: config }); // perform nms and filter boxes
-
+  const output1 = new Tensor("float32", output0.data, [8400, 56]);
+  const output2 = new Tensor("float32", output1.data.slice(0, 8400*5), [1, 5, 8400]);
+  const { selected } = await session.nms.run({ detection: output2, config: config }); // perform nms and filter boxes
+  
   const boxes = [];
-
+  
   // looping through output
   for (let idx = 0; idx < selected.dims[1]; idx++) {
     const data = selected.data.slice(idx * selected.dims[2], (idx + 1) * selected.dims[2]); // get rows

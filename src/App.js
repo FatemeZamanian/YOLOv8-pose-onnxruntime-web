@@ -24,16 +24,15 @@ const App = () => {
   // wait until opencv.js initialized
   cv["onRuntimeInitialized"] = async () => {
     const baseModelURL = `${process.env.PUBLIC_URL}/model`;
-
     
     // create session
     const arrBufNet = await download(
       `${baseModelURL}/${modelName}`, // url
       ["Loading YOLOv8 Pose model", setLoading] // logger
     );
-    console.log("0000");
+
     const yolov8 = await InferenceSession.create(arrBufNet);
-    console.log("1111");
+
     const arrBufNMS = await download(
       `${baseModelURL}/nms-yolov8.onnx`, // url
       ["Loading NMS model", setLoading] // logger
@@ -48,7 +47,7 @@ const App = () => {
       modelInputShape
     );
     await yolov8.run({ images: tensor });
-    console.log("2222");
+
     setSession({ net: yolov8, nms: nms });
     setLoading(null);
 
@@ -62,9 +61,9 @@ const App = () => {
         </Loader>
       )}
       <div className="header">
-        <h1>YOLOv8 Object Detection App</h1>
+        <h1>YOLOv8 Pose Detection App</h1>
         <p>
-          YOLOv8 object detection application live on browser powered by{" "}
+          YOLOv8 pose detection application live on browser powered by{" "}
           <code>onnxruntime-web</code>
         </p>
         <p>

@@ -11,7 +11,7 @@
 
 ---
 
-Object Detection application right in your browser.
+Pose Detection application right in your browser.
 Serving YOLOv8 in browser using onnxruntime-web with `wasm` backend.
 
 ## Setup
