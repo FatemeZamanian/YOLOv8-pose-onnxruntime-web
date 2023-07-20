@@ -35,9 +35,7 @@ export const detectImage = async (
   ); // nms config tensor
   
   const { output0 } = await session.net.run({ images: tensor }); // run session and get output layer
-  const output1 = new Tensor("float32", output0.data, [8400, 56]);
-  const output2 = new Tensor("float32", output1.data.slice(0, 8400*5), [1, 5, 8400]);
-  const { selected } = await session.nms.run({ detection: output2, config: config }); // perform nms and filter boxes
+  const { selected } = await session.nms.run({ detection: output0, config: config }); // perform nms and filter boxes
   
   const boxes = [];
   
@@ -45,9 +43,9 @@ export const detectImage = async (
   for (let idx = 0; idx < selected.dims[1]; idx++) {
     const data = selected.data.slice(idx * selected.dims[2], (idx + 1) * selected.dims[2]); // get rows
     const box = data.slice(0, 4);
-    const scores = data.slice(4); // classes probability scores
-    const score = Math.max(...scores); // maximum probability scores
-    const label = scores.indexOf(score); // class id of maximum probability scores
+    const score = data.slice(4, 5); // classes probability scores
+    const landmarks = data.slice(5); // maximum probability scores
+    const label = 0; // class id of maximum probability scores
 
     const [x, y, w, h] = [
       (box[0] - 0.5 * box[2]) * xRatio, // upscale left
@@ -56,10 +54,12 @@ export const detectImage = async (
       box[3] * yRatio, // upscale height
     ]; // keep boxes in maxSize range
 
+    console.log(landmarks);
     boxes.push({
       label: label,
       probability: score,
       bounding: [x, y, w, h], // upscale box
+      landmarks: landmarks
     }); // update boxes to draw later
   }
 

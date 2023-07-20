@@ -34,7 +34,7 @@ const App = () => {
     const yolov8 = await InferenceSession.create(arrBufNet);
 
     const arrBufNMS = await download(
-      `${baseModelURL}/nms-yolov8.onnx`, // url
+      `${baseModelURL}/modified_nms-yolov8.onnx`, // url
       ["Loading NMS model", setLoading] // logger
     );
     const nms = await InferenceSession.create(arrBufNMS);
