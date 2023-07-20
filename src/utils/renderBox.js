@@ -24,6 +24,15 @@ export const renderBoxes = (canvas, boxes) => {
     const color = colors.get(box.label);
     const score = (box.probability * 100).toFixed(1);
     const [x1, y1, width, height] = box.bounding;
+    const landmarks = box.landmarks;
+    console.log(landmarks);
+
+    // draw landmarks
+    landmarks.forEach((landmark) => {
+      pass
+      
+    });
+
 
     // draw box.
     ctx.fillStyle = Colors.hexToRgba(color, 0.2);
