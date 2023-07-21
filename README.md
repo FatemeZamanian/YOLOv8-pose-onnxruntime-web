@@ -17,8 +17,8 @@ Serving YOLOv8 in browser using onnxruntime-web with `wasm` backend.
 ## Setup
 
 ```bash
-git clone https://github.com/Hyuto/yolov8-onnxruntime-web.git
-cd yolov8-onnxruntime-web
+git clone https://github.com/Hyuto/yolov8-pose-onnxruntime-web.git
+cd yolov8-pose-onnxruntime-web
 yarn install # Install dependencies
 ```
 
@@ -33,10 +33,10 @@ yarn build # Build for productions
 
 **Main Model**
 
-YOLOv8n model converted to onnx.
+YOLOv8n-pose model converted to onnx.
 
 ```
-used model : yolov8n.onnx
+used model : yolov8n-pose.onnx
 size       : 13 Mb
 ```
 
@@ -85,3 +85,4 @@ Please update `src/utils/labels.json` with your custom YOLOv8 classes.
 ## Reference
 
 - https://github.com/ultralytics/ultralytics
+- https://github.com/Hyuto/yolov8-onnxruntime-web
