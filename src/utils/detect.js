@@ -54,7 +54,7 @@ export const detectImage = async (
       box[3] * yRatio, // upscale height
     ]; // keep boxes in maxSize range
 
-    console.log(landmarks);
+    // console.log(landmarks);
     boxes.push({
       label: label,
       probability: score,
@@ -63,7 +63,7 @@ export const detectImage = async (
     }); // update boxes to draw later
   }
 
-  renderBoxes(canvas, boxes); // Draw boxes
+  renderBoxes(canvas, boxes,xRatio,yRatio); // Draw boxes
   input.delete(); // delete unused Mat
 };
 
