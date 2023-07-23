@@ -2,9 +2,13 @@ import React, { useState, useRef } from "react";
 import cv from "@techstark/opencv-js";
 import { Tensor, InferenceSession } from "onnxruntime-web";
 import Loader from "./components/loader";
-import { detectImage } from "./utils/detect";
+import { detectImage, detectVideo } from "./utils/detect";
 import { download } from "./utils/download";
 import "./style/App.css";
+import ButtonHandler from "./components/btn-handler";
+import Webcam from "./utils/webcam";
+
+
 
 const App = () => {
   const [session, setSession] = useState(null);
@@ -13,6 +17,51 @@ const App = () => {
   const inputImage = useRef(null);
   const imageRef = useRef(null);
   const canvasRef = useRef(null);
+  const cameraRef = useRef(null);
+  const videoRef = useRef(null);
+  const [streaming, setStreaming] = useState(null); // streaming state
+  const webcam = new Webcam(); // webcam handler
+  // const getVideo = () => {
+  //   navigator.mediaDevices
+  //     .getUserMedia({ video: { width: 300 } })
+  //     .then(stream => {
+  //       let video = videoRef.current;
+  //       video.srcObject = stream;
+  //       video.play();
+  //     })
+  //     .catch(err => {
+  //       console.error("error:", err);
+  //     });
+  // };
+
+  const onClickVideoStream = () => {
+    // if not streaming
+    // if (streaming === null || streaming === "image") {
+    // closing image streaming
+    // getVideo();
+    // webcam.open(cameraRef.current); // open webcam
+    // cameraRef.current.style.display = "block"; // show camera
+    // setStreaming("camera"); // set streaming to camera
+    // }
+    // closing video streaming
+    // else if (streaming === "camera") {
+    // webcam.close(cameraRef.current);
+    // cameraRef.current.style.display = "none";
+    // videoRef
+    webcam.open(videoRef.current);
+    setStreaming(null);
+    // } else alert(`Can't handle more than 1 stream\nCurrently streaming : ${streaming}`); // if streaming video
+  }
+
+  const onLoadVideo = () => {
+    detectVideo(videoRef.current,
+      canvasRef.current,
+      session,
+      topk,
+      iouThreshold,
+      scoreThreshold,
+      modelInputShape)
+  }
 
   // Configs
   const modelName = "yolov8n-pose.onnx";
@@ -24,7 +73,7 @@ const App = () => {
   // wait until opencv.js initialized
   cv["onRuntimeInitialized"] = async () => {
     const baseModelURL = `${process.env.PUBLIC_URL}/model`;
-    
+
     // create session
     const arrBufNet = await download(
       `${baseModelURL}/${modelName}`, // url
@@ -46,7 +95,9 @@ const App = () => {
       new Float32Array(modelInputShape.reduce((a, b) => a * b)),
       modelInputShape
     );
+
     await yolov8.run({ images: tensor });
+
 
     setSession({ net: yolov8, nms: nms });
     setLoading(null);
@@ -89,6 +140,16 @@ const App = () => {
             );
           }}
         />
+
+        <video ref={videoRef} autoPlay playsInline muted style={{ display: image ? "none" : "block" }}
+          onPlaying={() => detectVideo(videoRef.current,
+            canvasRef.current,
+            session,
+            topk,
+            iouThreshold,
+            scoreThreshold,
+            modelInputShape)} />
+
         <canvas
           id="canvas"
           width={modelInputShape[2]}
@@ -114,6 +175,9 @@ const App = () => {
           setImage(url);
         }}
       />
+      {/* <input  ref={cameraRef} accept="video/*" style={{ display: "none" }} /> */}
+      {/* <input ref={cameraRef} type="file" accept="video/*" id="capture" capture="camcorder"/> */}
+
       <div className="btn-container">
         <button
           onClick={() => {
@@ -135,6 +199,13 @@ const App = () => {
             Close image
           </button>
         )}
+        <button
+          onClick={onClickVideoStream}
+        >
+          {streaming === "camera" ? "Close" : "Open"} Webcam
+        </button>
+
+
       </div>
     </div>
   );

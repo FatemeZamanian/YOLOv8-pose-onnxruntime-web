@@ -43,8 +43,10 @@ const connections = [
  * @param {Array[Object]} boxes boxes array
  */
 export const renderBoxes = (canvas, boxes,xi,yi) => {
+  // debugger
   const ctx = canvas.getContext("2d");
   ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height); // clean canvas
+  // debugger
 
   boxes.forEach((box) => {
     const keypoints = box.landmarks;
