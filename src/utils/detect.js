@@ -148,8 +148,7 @@ export const detectVideo = async (
     const width = inputShape[0]
     const height = inputShape[1]
     const src = new cv.Mat(width, height, cv.CV_8UC4);
-    const 
-     = new cv.Mat(width, height, cv.CV_8UC1);
+    const dst = new cv.Mat(width, height, cv.CV_8UC1);
     const FPS = 30;
 
     // let begin = Date.now();
