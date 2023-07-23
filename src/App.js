@@ -5,10 +5,6 @@ import Loader from "./components/loader";
 import { detectImage, detectVideo } from "./utils/detect";
 import { download } from "./utils/download";
 import "./style/App.css";
-import ButtonHandler from "./components/btn-handler";
-import Webcam from "./utils/webcam";
-
-
 
 const App = () => {
   const [session, setSession] = useState(null);
@@ -20,21 +16,47 @@ const App = () => {
   const cameraRef = useRef(null);
   const videoRef = useRef(null);
   const [streaming, setStreaming] = useState(null); // streaming state
-  const webcam = new Webcam(); // webcam handler
-  // const getVideo = () => {
-  //   navigator.mediaDevices
-  //     .getUserMedia({ video: { width: 300 } })
-  //     .then(stream => {
-  //       let video = videoRef.current;
-  //       video.srcObject = stream;
-  //       video.play();
-  //     })
-  //     .catch(err => {
-  //       console.error("error:", err);
-  //     });
-  // };
 
   const onClickVideoStream = () => {
+    const height = modelInputShape[2]
+    const width = modelInputShape[3]
+    let video = document.getElementById('vid');
+    console.log(video.width, video.height)
+    let src = new cv.Mat(height, width, cv.CV_8UC4);
+    let dst = new cv.Mat(height, width, cv.CV_8UC1);
+    let cap = new cv.VideoCapture(videoRef);
+
+
+    const FPS = 30;
+    function processVideo() {
+      
+        try {
+          // if (!streaming) {
+          //     // clean and stop.
+          //     debugger
+          //     src.delete();
+          //     dst.delete();
+          //     return;
+          // }
+          let begin = Date.now();
+          // start processing.
+          debugger
+          cap.read(src);
+          cv.cvtColor(src, dst, cv.COLOR_RGBA2GRAY);
+          cv.imshow('canvasOutput', dst);
+          debugger
+          // schedule the next one.
+          let delay = 1000/FPS - (Date.now() - begin);
+          setTimeout(processVideo, delay);
+      } catch (err) {
+          alert(err);
+      }
+};
+
+// schedule the first one.
+setTimeout(processVideo, 0);
+
+
     // if not streaming
     // if (streaming === null || streaming === "image") {
     // closing image streaming
@@ -48,8 +70,8 @@ const App = () => {
     // webcam.close(cameraRef.current);
     // cameraRef.current.style.display = "none";
     // videoRef
-    webcam.open(videoRef.current);
-    setStreaming(null);
+    // webcam.open(videoRef.current);
+    // setStreaming(null);
     // } else alert(`Can't handle more than 1 stream\nCurrently streaming : ${streaming}`); // if streaming video
   }
 
@@ -141,7 +163,7 @@ const App = () => {
           }}
         />
 
-        <video ref={videoRef} autoPlay playsInline muted style={{ display: image ? "none" : "block" }}
+        <video width={640} height={640} id="vid" ref={videoRef} autoPlay playsInline muted style={{ display: image ? "none" : "block" }}
           onPlaying={() => detectVideo(videoRef.current,
             canvasRef.current,
             session,
@@ -201,6 +223,7 @@ const App = () => {
         )}
         <button
           onClick={onClickVideoStream}
+          
         >
           {streaming === "camera" ? "Close" : "Open"} Webcam
         </button>

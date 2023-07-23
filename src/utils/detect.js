@@ -24,7 +24,7 @@ export const detectImage = async (
   isVideo
 ) => {
   // debugger
-  const [modelWidth, modelHeight] = inputShape.slice(2);
+  const [modelWidth, modelHeight] = inputShape.slice(3);
   const [input, xRatio, yRatio] = preprocessing(image, modelWidth, modelHeight, isVideo);
 
   const tensor = new Tensor("float32", input.data32F, inputShape); // to ort.Tensor
@@ -111,10 +111,6 @@ const preprocessing = (source, modelWidth, modelHeight, isVideo) => {
 };
 
 
-
-
-
-
 //detect video
 
 /**
@@ -139,14 +135,10 @@ export const detectVideo = async (
 ) => {
   const ctx = canvas.getContext("2d");
   ctx.save();
-  const height = inputShape[1];
-  const width = inputShape[0];
-  // ctx.scale(-1, 1);
-  // ctx.translate(-canvas.width, 0);
   const detectFrame = async () => {
     const ctx = canvas.getContext("2d");
-    const width = inputShape[0]
-    const height = inputShape[1]
+    const width = inputShape[2]
+    const height = inputShape[3]
     const src = new cv.Mat(width, height, cv.CV_8UC4);
     const dst = new cv.Mat(width, height, cv.CV_8UC1);
     const FPS = 30;
