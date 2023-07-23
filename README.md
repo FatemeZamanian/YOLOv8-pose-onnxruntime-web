@@ -17,7 +17,7 @@ Serving YOLOv8 in browser using onnxruntime-web with `wasm` backend.
 ## Setup
 
 ```bash
-git clone https://github.com/Hyuto/yolov8-pose-onnxruntime-web.git
+git clone https://github.com/FatemeZamanian/yolov8-pose-onnxruntime-web.git
 cd yolov8-pose-onnxruntime-web
 yarn install # Install dependencies
 ```
