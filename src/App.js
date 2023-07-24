@@ -21,19 +21,19 @@ const App = () => {
   const onClickVideoStream = () => {
     console.log(streaming)
     // streaming =  streaming ? !streaming : streaming
-    if (streaming===true){
-      streaming=false;
+    if (streaming === true) {
+      streaming = false;
     }
-    else{
-      streaming=true;
+    else {
+      streaming = true;
     }
-    let video = document.getElementById("vid"); // video is the id of video tag
-    let canvas = document.getElementById("canvas"); // canvas is the id of canvas tag
+    let video = document.getElementById("vid");
+    let canvas = document.getElementById("canvas");
     video.width = 640;
     video.height = 640;
     navigator.mediaDevices
       .getUserMedia({ video: true, audio: false })
-      .then(function(stream) {
+      .then(function (stream) {
         video.srcObject = stream;
         video.play();
 
@@ -41,8 +41,7 @@ const App = () => {
         let dst = new cv.Mat(640, 640, cv.CV_8UC1);
         let cap = new cv.VideoCapture(video);
 
-        const FPS = 30;
-        function processVideo() {
+        async function processVideo() {
           try {
             if (!streaming) {
               // clean and stop.
@@ -50,31 +49,24 @@ const App = () => {
               dst.delete();
               return;
             }
-            
-            let begin = Date.now();
-            // start processing.
-            
+
             cap.read(src);
             cv.cvtColor(src, dst, cv.COLOR_BGR2RGB);
-            detectImage(src,canvas,session,topk,iouThreshold,scoreThreshold,modelInputShape,true)
-            // debugger
-            // cv.imshow("canvas", dst);
-            // schedule the next one.
-            // let delay = 1000 / FPS - (Date.now() - begin);
-            let delay = 1;
-            setTimeout(processVideo, delay);
+            detectImage(src, canvas, session, topk, iouThreshold, scoreThreshold, modelInputShape, true);
+
           } catch (err) {
             alert(err);
           }
         }
 
         // schedule the first one.
-        setTimeout(processVideo, 1000);
+        // setTimeout(processVideo, 1);
+        setInterval(processVideo, 100);
       })
-      .catch(function(err) {
+      .catch(function (err) {
         console.log("An error occurred! " + err);
       });
-};
+  };
 
   // Configs
   const modelName = "yolov8n-pose.onnx";
@@ -110,7 +102,6 @@ const App = () => {
     );
 
     await yolov8.run({ images: tensor });
-
 
     setSession({ net: yolov8, nms: nms });
     setLoading(null);
@@ -154,7 +145,7 @@ const App = () => {
           }}
         />
 
-        <video id="vid" ref={videoRef} autoPlay playsInline muted style={{ inlineSize: "fit-content",display: image ? "none" : "block" }}/>
+        <video id="vid" ref={videoRef} autoPlay playsInline muted style={{ inlineSize: "fit-content", display: image ? "none" : "block" }} />
 
         <canvas
           id="canvas"
@@ -205,12 +196,10 @@ const App = () => {
         )}
         <button
           onClick={onClickVideoStream}
-          
+
         >
           {streaming === "camera" ? "Close" : "Open"} Webcam
         </button>
-
-
       </div>
     </div>
   );

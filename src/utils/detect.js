@@ -39,10 +39,12 @@ export const detectImage = async (
       scoreThreshold, // score threshold
     ])
   ); // nms config tensor
+  
   console.time("session")
   const { output0 } = await session.net.run({ images: tensor }); // run session and get output layer
+  console.timeEnd("session")
   const { selected } = await session.nms.run({ detection: output0, config: config }); // perform nms and filter boxes
-
+  
   const boxes = [];
 
   // looping through output
@@ -69,7 +71,7 @@ export const detectImage = async (
     }); // update boxes to draw later
   }
   renderBoxes(canvas, boxes, xRatio, yRatio); // Draw boxes
-  console.timeEnd("session")
+  
   callback();
   input.delete(); // delete unused Mat
 };
@@ -113,43 +115,3 @@ const preprocessing = (source, modelWidth, modelHeight, isVideo) => {
   // console.log(input)
   return [input, xRatio, yRatio];
 };
-
-
-//detect video
-
-// /**
-//  * Function to detect video from every source.
-//  * @param {HTMLVideoElement} vidSource video source
-//  * @param {HTMLCanvasElement} canvas canvas to draw boxes
-//  * @param {ort.InferenceSession} session YOLOv8 onnxruntime session
-//  * @param {Number} topk Integer representing the maximum number of boxes to be selected per class
-//  * @param {Number} iouThreshold Float representing the threshold for deciding whether boxes overlap too much with respect to IOU
-//  * @param {Number} scoreThreshold Float representing the threshold for deciding when to remove boxes based on score
-//  * @param {Number[]} inputShape model input shape. Normally in YOLO model [batch, channels, width, height]
-//  */
-
-// export const detectVideo = async (
-//   vidSource,
-//   canvas,
-//   session,
-//   topk,
-//   iouThreshold,
-//   scoreThreshold,
-//   inputShape
-// ) => {
-//     detectImage(dst,
-//       canvas,
-//       session,
-//       topk,
-//       iouThreshold,
-//       scoreThreshold,
-//       inputShape,
-//       () => {
-//         requestAnimationFrame(detectFrame); // get another frame
-//       },
-//       true);
-
-//   // setInterval(() => {
-//   detectFrame(); // initialize to detect every frame
-//   // }, 1)
-// };

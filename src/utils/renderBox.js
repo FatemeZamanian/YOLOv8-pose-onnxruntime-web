@@ -44,13 +44,13 @@ const connections = [
  */
 export const renderBoxes = (canvas, boxes,xi,yi) => {
   // debugger
-  const ctx = canvas.getContext("2d");
+  const ctx = canvas.getContext("2d", { willReadFrequently: true });
   ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height); // clean canvas
   // debugger
 
   boxes.forEach((box) => {
     const keypoints = box.landmarks;
-    console.log(keypoints);
+    // console.log(keypoints);
     // draw landmarks
     let c = 0 ;
     for (let j = 0; j < keypoints.length; j+=3) {
