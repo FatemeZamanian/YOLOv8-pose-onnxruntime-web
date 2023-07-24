@@ -15,9 +15,18 @@ const App = () => {
   const canvasRef = useRef(null);
   const cameraRef = useRef(null);
   const videoRef = useRef(null);
-  const [streaming, setStreaming] = useState(null); // streaming state
+  let [streaming, setStreaming] = useState(false); // streaming state
+  // streaming= false
 
   const onClickVideoStream = () => {
+    console.log(streaming)
+    // streaming =  streaming ? !streaming : streaming
+    if (streaming===true){
+      streaming=false;
+    }
+    else{
+      streaming=true;
+    }
     let video = document.getElementById("vid"); // video is the id of video tag
     let canvas = document.getElementById("canvas"); // canvas is the id of canvas tag
     video.width = 640;
@@ -37,9 +46,9 @@ const App = () => {
           try {
             if (!streaming) {
               // clean and stop.
-              // src.delete();
-              // dst.delete();
-              // return;
+              src.delete();
+              dst.delete();
+              return;
             }
             
             let begin = Date.now();
@@ -48,7 +57,7 @@ const App = () => {
             cap.read(src);
             cv.cvtColor(src, dst, cv.COLOR_BGR2RGB);
             detectImage(src,canvas,session,topk,iouThreshold,scoreThreshold,modelInputShape,true)
-            debugger
+            // debugger
             // cv.imshow("canvas", dst);
             // schedule the next one.
             // let delay = 1000 / FPS - (Date.now() - begin);
@@ -60,7 +69,7 @@ const App = () => {
         }
 
         // schedule the first one.
-        setTimeout(processVideo, 0);
+        setTimeout(processVideo, 1000);
       })
       .catch(function(err) {
         console.log("An error occurred! " + err);
@@ -70,7 +79,7 @@ const App = () => {
   // Configs
   const modelName = "yolov8n-pose.onnx";
   const modelInputShape = [1, 3, 640, 640];
-  const topk = 100;
+  const topk = 1;
   const iouThreshold = 0.45;
   const scoreThreshold = 0.25;
 
@@ -145,7 +154,7 @@ const App = () => {
           }}
         />
 
-        <video id="vid" ref={videoRef} autoPlay playsInline muted style={{ display: image ? "none" : "block" }}/>
+        <video id="vid" ref={videoRef} autoPlay playsInline muted style={{ inlineSize: "fit-content",display: image ? "none" : "block" }}/>
 
         <canvas
           id="canvas"

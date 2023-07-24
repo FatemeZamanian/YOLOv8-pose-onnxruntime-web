@@ -28,7 +28,7 @@ export const detectImage = async (
   const [modelWidth] = inputShape.slice(3);
   const [modelHeight] = inputShape.slice(3);
   const [input, xRatio, yRatio] = preprocessing(image, modelWidth, modelHeight, isVideo);
-  debugger
+  // debugger
   
   const tensor = new Tensor("float32", input.data32F, inputShape); // to ort.Tensor
   const config = new Tensor(
@@ -68,8 +68,8 @@ export const detectImage = async (
       landmarks: landmarks
     }); // update boxes to draw later
   }
-  console.timeEnd("session")
   renderBoxes(canvas, boxes, xRatio, yRatio); // Draw boxes
+  console.timeEnd("session")
   callback();
   input.delete(); // delete unused Mat
 };
@@ -96,7 +96,7 @@ const preprocessing = (source, modelWidth, modelHeight, isVideo) => {
     yRatio = maxSize / matC3.rows; // set yRatio
   const matPad = new cv.Mat(); // new mat for padded image
   cv.copyMakeBorder(matC3, matPad, 0, yPad, 0, xPad, cv.BORDER_CONSTANT); // padding black
-  debugger
+  // debugger
   const input = cv.blobFromImage(
     matPad,
     1 / 255.0, // normalize
