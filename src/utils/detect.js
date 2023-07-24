@@ -20,13 +20,16 @@ export const detectImage = async (
   iouThreshold,
   scoreThreshold,
   inputShape,
+  isVideo,
   callback = () => { },
-  isVideo
+  
 ) => {
   // debugger
-  const [modelWidth, modelHeight] = inputShape.slice(3);
+  const [modelWidth] = inputShape.slice(3);
+  const [modelHeight] = inputShape.slice(3);
   const [input, xRatio, yRatio] = preprocessing(image, modelWidth, modelHeight, isVideo);
-
+  debugger
+  
   const tensor = new Tensor("float32", input.data32F, inputShape); // to ort.Tensor
   const config = new Tensor(
     "float32",
@@ -79,9 +82,10 @@ export const detectImage = async (
  * @return preprocessed image and configs
  */
 const preprocessing = (source, modelWidth, modelHeight, isVideo) => {
-  // debugger
   const mat = isVideo ? source : cv.imread(source); // read from img tag
+  
   const matC3 = new cv.Mat(mat.rows, mat.cols, cv.CV_8UC3); // new image matrix
+  
   cv.cvtColor(mat, matC3, cv.COLOR_RGBA2BGR); // RGBA to BGR
 
   // padding image to [n x n] dim
@@ -92,7 +96,7 @@ const preprocessing = (source, modelWidth, modelHeight, isVideo) => {
     yRatio = maxSize / matC3.rows; // set yRatio
   const matPad = new cv.Mat(); // new mat for padded image
   cv.copyMakeBorder(matC3, matPad, 0, yPad, 0, xPad, cv.BORDER_CONSTANT); // padding black
-
+  debugger
   const input = cv.blobFromImage(
     matPad,
     1 / 255.0, // normalize
@@ -101,162 +105,51 @@ const preprocessing = (source, modelWidth, modelHeight, isVideo) => {
     true, // swapRB
     false // crop
   ); // preprocessing image matrix
-
+  
   // release mat opencv
-  mat.delete();
-  matC3.delete();
-  matPad.delete();
-
+  // mat.delete();
+  // matC3.delete();
+  // matPad.delete();
+  // console.log(input)
   return [input, xRatio, yRatio];
 };
 
 
 //detect video
 
-/**
- * Function to detect video from every source.
- * @param {HTMLVideoElement} vidSource video source
- * @param {HTMLCanvasElement} canvas canvas to draw boxes
- * @param {ort.InferenceSession} session YOLOv8 onnxruntime session
- * @param {Number} topk Integer representing the maximum number of boxes to be selected per class
- * @param {Number} iouThreshold Float representing the threshold for deciding whether boxes overlap too much with respect to IOU
- * @param {Number} scoreThreshold Float representing the threshold for deciding when to remove boxes based on score
- * @param {Number[]} inputShape model input shape. Normally in YOLO model [batch, channels, width, height]
- */
+// /**
+//  * Function to detect video from every source.
+//  * @param {HTMLVideoElement} vidSource video source
+//  * @param {HTMLCanvasElement} canvas canvas to draw boxes
+//  * @param {ort.InferenceSession} session YOLOv8 onnxruntime session
+//  * @param {Number} topk Integer representing the maximum number of boxes to be selected per class
+//  * @param {Number} iouThreshold Float representing the threshold for deciding whether boxes overlap too much with respect to IOU
+//  * @param {Number} scoreThreshold Float representing the threshold for deciding when to remove boxes based on score
+//  * @param {Number[]} inputShape model input shape. Normally in YOLO model [batch, channels, width, height]
+//  */
 
-export const detectVideo = async (
-  vidSource,
-  canvas,
-  session,
-  topk,
-  iouThreshold,
-  scoreThreshold,
-  inputShape
-) => {
-  const ctx = canvas.getContext("2d");
-  ctx.save();
-  const detectFrame = async () => {
-    const ctx = canvas.getContext("2d");
-    const width = inputShape[2]
-    const height = inputShape[3]
-    const src = new cv.Mat(width, height, cv.CV_8UC4);
-    const dst = new cv.Mat(width, height, cv.CV_8UC1);
-    const FPS = 30;
+// export const detectVideo = async (
+//   vidSource,
+//   canvas,
+//   session,
+//   topk,
+//   iouThreshold,
+//   scoreThreshold,
+//   inputShape
+// ) => {
+//     detectImage(dst,
+//       canvas,
+//       session,
+//       topk,
+//       iouThreshold,
+//       scoreThreshold,
+//       inputShape,
+//       () => {
+//         requestAnimationFrame(detectFrame); // get another frame
+//       },
+//       true);
 
-    // let begin = Date.now();
-    ctx.drawImage(vidSource, 0, 0, width, height);
-
-    src.data.set(ctx.getImageData(0, 0, width, height).data);
-    cv.cvtColor(src, dst, cv.COLOR_BGR2BGRA);
-
-    // cv.imshow(canvas, dst); // canvasOutput is the id of another <canvas>;
-    // schedule next one.
-    // let delay = 1000 / FPS - (Date.now() - begin);
-    detectImage(dst,
-      canvas,
-      session,
-      topk,
-      iouThreshold,
-      scoreThreshold,
-      inputShape,
-      () => {
-        requestAnimationFrame(detectFrame); // get another frame
-      },
-      true);
-    // ctx.clearRect(0, 0, width, height);
-    // ctx.drawImage(vidSource, 0, 0, width, height);
-    // const img = new Image();
-    // debugger
-    // const setImageBlob = (blob) => {
-    //   img.src = URL.createObjectURL(blob);
-    //   debugger
-    // debugger
-
-    // detectImage(vidSource,
-    //   canvas,
-    //   session,
-    //   topk,
-    //   iouThreshold,
-    //   scoreThreshold,
-    //   inputShape,
-    //   () => {
-    //     requestAnimationFrame(detectFrame); // get another frame
-    //   });
-    // img.onload = () => {
-    // const test5 = ctx.getImageData(0, 0, inputShape[0], inputShape[1]).data
-    // debugger
-    // no longer need to read the blob so it's revoked
-    // };
-
-    // img.src = url;
-    // }
-
-    // canvas.toBlob(setImageBlob);
-    // const playImage = new Image();
-    // playImage.src = ""
-    // playImage.onload = () => {
-    // canvas.height = vidSource.videoHeight;
-    // canvas.width = vidSource.videoWidth;
-    // const startX = vidSource.videoWidth / 2 - playImage.width / 2;
-    // const startY = vidSource.videoHeight / 2 - playImage.height / 2;
-    // canvas
-    //   .getContext("2d")
-    //   .drawImage(playImage, startX, startY, playImage.width, playImage.height);
-    // canvas.toBlob() = (blob) => {
-    //   const img = new Image();
-    //   img.src = window.URL.createObjectUrl(blob);
-    // detectImage(vidSource,
-    //   canvas,
-    //   session,
-    //   topk,
-    //   iouThreshold,
-    //   scoreThreshold,
-    //   inputShape,
-    //   () => {
-    //     requestAnimationFrame(detectFrame); // get another frame
-    //   });
-    // };
-    // };
-
-
-    // const img = canvas.toDataURL("image/png")
-    // ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height); // clean canvas
-    // const img = ctx.drawImage(vidSource, 0, 0)
-    // debugger
-    // detectImage(img,
-    //   canvas,
-    //   session,
-    //   topk,
-    //   iouThreshold,
-    //   scoreThreshold,
-    //   inputShape, () => {
-    //     requestAnimationFrame(detectFrame); // get another frame
-    //   });
-  };
-
-  // setInterval(() => {
-  detectFrame(); // initialize to detect every frame
-  // }, 1)
-};
-
-
-    // const ctx = canvas.getContext("2d");
-    // const width = inputShape[0]
-    // const height = inputShape[1]
-    // const src = new cv.Mat(width, height, cv.CV_8UC4);
-    // const dst = new cv.Mat(width, height, cv.CV_8UC1);
-    // const FPS = 30;
-
-    // function processVideo() {
-    //   let begin = Date.now();
-    //   ctx.drawImage(vidSource, 0, 0, width, height);
-
-    //   src.data.set(ctx.getImageData(0, 0, width, height).data);
-    //   cv.cvtColor(src, dst, cv.COLOR_BGR2BGRA);
-
-    //   // cv.imshow(canvas, dst); // canvasOutput is the id of another <canvas>;
-    //   // schedule next one.
-    //   let delay = 1000 / FPS - (Date.now() - begin);
-    //   setTimeout(processVideo, delay);
-    // }
-    // setTimeout(processVideo, 0);
+//   // setInterval(() => {
+//   detectFrame(); // initialize to detect every frame
+//   // }, 1)
+// };

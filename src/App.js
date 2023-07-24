@@ -2,7 +2,7 @@ import React, { useState, useRef } from "react";
 import cv from "@techstark/opencv-js";
 import { Tensor, InferenceSession } from "onnxruntime-web";
 import Loader from "./components/loader";
-import { detectImage, detectVideo } from "./utils/detect";
+import { detectImage } from "./utils/detect";
 import { download } from "./utils/download";
 import "./style/App.css";
 
@@ -18,72 +18,54 @@ const App = () => {
   const [streaming, setStreaming] = useState(null); // streaming state
 
   const onClickVideoStream = () => {
-    const height = modelInputShape[2]
-    const width = modelInputShape[3]
-    let video = document.getElementById('vid');
-    console.log(video.width, video.height)
-    let src = new cv.Mat(height, width, cv.CV_8UC4);
-    let dst = new cv.Mat(height, width, cv.CV_8UC1);
-    let cap = new cv.VideoCapture(videoRef);
+    let video = document.getElementById("vid"); // video is the id of video tag
+    let canvas = document.getElementById("canvas"); // canvas is the id of canvas tag
+    video.width = 640;
+    video.height = 640;
+    navigator.mediaDevices
+      .getUserMedia({ video: true, audio: false })
+      .then(function(stream) {
+        video.srcObject = stream;
+        video.play();
 
+        let src = new cv.Mat(640, 640, cv.CV_8UC4);
+        let dst = new cv.Mat(640, 640, cv.CV_8UC1);
+        let cap = new cv.VideoCapture(video);
 
-    const FPS = 30;
-    function processVideo() {
-      
-        try {
-          // if (!streaming) {
-          //     // clean and stop.
-          //     debugger
-          //     src.delete();
-          //     dst.delete();
-          //     return;
-          // }
-          let begin = Date.now();
-          // start processing.
-          debugger
-          cap.read(src);
-          cv.cvtColor(src, dst, cv.COLOR_RGBA2GRAY);
-          cv.imshow('canvasOutput', dst);
-          debugger
-          // schedule the next one.
-          let delay = 1000/FPS - (Date.now() - begin);
-          setTimeout(processVideo, delay);
-      } catch (err) {
-          alert(err);
-      }
+        const FPS = 30;
+        function processVideo() {
+          try {
+            if (!streaming) {
+              // clean and stop.
+              // src.delete();
+              // dst.delete();
+              // return;
+            }
+            
+            let begin = Date.now();
+            // start processing.
+            
+            cap.read(src);
+            cv.cvtColor(src, dst, cv.COLOR_BGR2RGB);
+            detectImage(src,canvas,session,topk,iouThreshold,scoreThreshold,modelInputShape,true)
+            debugger
+            // cv.imshow("canvas", dst);
+            // schedule the next one.
+            // let delay = 1000 / FPS - (Date.now() - begin);
+            let delay = 1;
+            setTimeout(processVideo, delay);
+          } catch (err) {
+            alert(err);
+          }
+        }
+
+        // schedule the first one.
+        setTimeout(processVideo, 0);
+      })
+      .catch(function(err) {
+        console.log("An error occurred! " + err);
+      });
 };
-
-// schedule the first one.
-setTimeout(processVideo, 0);
-
-
-    // if not streaming
-    // if (streaming === null || streaming === "image") {
-    // closing image streaming
-    // getVideo();
-    // webcam.open(cameraRef.current); // open webcam
-    // cameraRef.current.style.display = "block"; // show camera
-    // setStreaming("camera"); // set streaming to camera
-    // }
-    // closing video streaming
-    // else if (streaming === "camera") {
-    // webcam.close(cameraRef.current);
-    // cameraRef.current.style.display = "none";
-    // videoRef
-    // webcam.open(videoRef.current);
-    // setStreaming(null);
-    // } else alert(`Can't handle more than 1 stream\nCurrently streaming : ${streaming}`); // if streaming video
-  }
-
-  const onLoadVideo = () => {
-    detectVideo(videoRef.current,
-      canvasRef.current,
-      session,
-      topk,
-      iouThreshold,
-      scoreThreshold,
-      modelInputShape)
-  }
 
   // Configs
   const modelName = "yolov8n-pose.onnx";
@@ -163,14 +145,7 @@ setTimeout(processVideo, 0);
           }}
         />
 
-        <video width={640} height={640} id="vid" ref={videoRef} autoPlay playsInline muted style={{ display: image ? "none" : "block" }}
-          onPlaying={() => detectVideo(videoRef.current,
-            canvasRef.current,
-            session,
-            topk,
-            iouThreshold,
-            scoreThreshold,
-            modelInputShape)} />
+        <video id="vid" ref={videoRef} autoPlay playsInline muted style={{ display: image ? "none" : "block" }}/>
 
         <canvas
           id="canvas"
@@ -197,8 +172,6 @@ setTimeout(processVideo, 0);
           setImage(url);
         }}
       />
-      {/* <input  ref={cameraRef} accept="video/*" style={{ display: "none" }} /> */}
-      {/* <input ref={cameraRef} type="file" accept="video/*" id="capture" capture="camcorder"/> */}
 
       <div className="btn-container">
         <button
