@@ -78,7 +78,7 @@ const App = () => {
       ["Loading YOLOv8 Pose model", setLoading] // logger
     );
 
-    let yolov8 = await InferenceSession.create(arrBufNet, { backendHint: 'webgl' });
+    let yolov8 = await InferenceSession.create(arrBufNet, { backendHint: 'webgl', setNumThreads: 4, intra_op_num_threads: 4, inter_op_num_threads: 4 });
 
     const arrBufNMS = await download(
       `${baseModelURL}/modified_nms-yolov8.onnx`, // url

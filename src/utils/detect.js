@@ -1,5 +1,5 @@
 import cv, { getThreadNum, setNumThreads } from "@techstark/opencv-js";
-import { Tensor ,onnx } from "onnxruntime-web";
+import { Tensor } from "onnxruntime-web";
 import { renderBoxes } from "./renderBox";
 
 /**
@@ -37,7 +37,7 @@ export const detectImage = async (
   ); // nms config tensor
 
   // console.time("session")
-  const { output0 } = await session.net.run({ images: tensor }, onnx.Option.setNumThreads=4); // run session and get output layer
+  const { output0 } = await session.net.run({ images: tensor }); // run session and get output layer
   // console.timeEnd("session")
   const { selected } = await session.nms.run({ detection: output0, config: config }); // perform nms and filter boxes
   
