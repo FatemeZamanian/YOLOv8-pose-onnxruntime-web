@@ -13,10 +13,8 @@ const App = () => {
   const inputImage = useRef(null);
   const imageRef = useRef(null);
   const canvasRef = useRef(null);
-  const cameraRef = useRef(null);
   const videoRef = useRef(null);
-  let [streaming, setStreaming] = useState(false); // streaming state
-  // streaming= false
+  let [streaming] = useState(false); // streaming state
 
   const onClickVideoStream = () => {
     console.log(streaming)
@@ -38,7 +36,6 @@ const App = () => {
         video.play();
 
         let src = new cv.Mat(640, 640, cv.CV_8UC4);
-        let dst = new cv.Mat(640, 640, cv.CV_8UC1);
         let cap = new cv.VideoCapture(video);
 
         async function processVideo() {
@@ -46,12 +43,10 @@ const App = () => {
             if (!streaming) {
               // clean and stop.
               src.delete();
-              dst.delete();
               return;
             }
 
             cap.read(src);
-            cv.cvtColor(src, dst, cv.COLOR_BGR2RGB);
             detectImage(src, canvas, session, topk, iouThreshold, scoreThreshold, modelInputShape, true);
 
           } catch (err) {
@@ -59,9 +54,7 @@ const App = () => {
           }
         }
 
-        // schedule the first one.
-        // setTimeout(processVideo, 1);
-        setInterval(processVideo, 100);
+        setInterval(processVideo, 10);
       })
       .catch(function (err) {
         console.log("An error occurred! " + err);
@@ -85,8 +78,7 @@ const App = () => {
       ["Loading YOLOv8 Pose model", setLoading] // logger
     );
 
-    const yolov8 = await InferenceSession.create(arrBufNet);
-  
+    let yolov8 = await InferenceSession.create(arrBufNet, { backendHint: 'webgl' });
 
     const arrBufNMS = await download(
       `${baseModelURL}/modified_nms-yolov8.onnx`, // url
@@ -107,7 +99,6 @@ const App = () => {
 
     setSession({ net: yolov8, nms: nms });
     setLoading(null);
-
   };
 
   return (

@@ -22,17 +22,13 @@ export const detectImage = async (
   inputShape,
   isVideo,
   callback = () => { },
-  
 ) => {
-  // debugger
-  const [modelWidth] = inputShape.slice(3);
+  const [modelWidth] = inputShape.slice(2);
   const [modelHeight] = inputShape.slice(3);
   const [input, xRatio, yRatio] = preprocessing(image, modelWidth, modelHeight, isVideo);
-  // debugger
   
   const tensor = new Tensor("float32", input.data32F, inputShape); // to ort.Tensor
-  const config = new Tensor(
-    "float32",
+  const config = new Tensor("float32",
     new Float32Array([
       topk, // topk per class
       iouThreshold, // iou threshold
@@ -40,10 +36,9 @@ export const detectImage = async (
     ])
   ); // nms config tensor
 
-
-  console.time("session")
-  const { output0 } = await session.net.run({ images: tensor },onnx.Option.setNumThreads=4); // run session and get output layer
-  console.timeEnd("session")
+  // console.time("session")
+  const { output0 } = await session.net.run({ images: tensor }, onnx.Option.setNumThreads=4); // run session and get output layer
+  // console.timeEnd("session")
   const { selected } = await session.nms.run({ detection: output0, config: config }); // perform nms and filter boxes
   
   const boxes = [];
@@ -63,7 +58,6 @@ export const detectImage = async (
       box[3] * yRatio, // upscale height
     ]; // keep boxes in maxSize range
 
-    // console.log(landmarks);
     boxes.push({
       label: label,
       probability: score,
@@ -87,19 +81,17 @@ export const detectImage = async (
 const preprocessing = (source, modelWidth, modelHeight, isVideo) => {
   const mat = isVideo ? source : cv.imread(source); // read from img tag
   
-  const matC3 = new cv.Mat(mat.rows, mat.cols, cv.CV_8UC3); // new image matrix
-  
-  cv.cvtColor(mat, matC3, cv.COLOR_RGBA2BGR); // RGBA to BGR
-
   // padding image to [n x n] dim
-  const maxSize = Math.max(matC3.rows, matC3.cols); // get max size from width and height
-  const xPad = maxSize - matC3.cols, // set xPadding
-    xRatio = maxSize / matC3.cols; // set xRatio
-  const yPad = maxSize - matC3.rows, // set yPadding
-    yRatio = maxSize / matC3.rows; // set yRatio
+  const maxSize = Math.max(mat.rows, mat.cols); // get max size from width and height
+  const xPad = maxSize - mat.cols, // set xPadding
+    xRatio = maxSize / mat.cols; // set xRatio
+    const yPad = maxSize - mat.rows, // set yPadding
+    yRatio = maxSize / mat.rows; // set yRatio
   const matPad = new cv.Mat(); // new mat for padded image
-  cv.copyMakeBorder(matC3, matPad, 0, yPad, 0, xPad, cv.BORDER_CONSTANT); // padding black
-  // debugger
+
+  cv.copyMakeBorder(mat, matPad, 0, yPad, 0, xPad, cv.BORDER_CONSTANT); // padding black
+
+  cv.cvtColor(matPad, matPad, cv.COLOR_BGRA2BGR); // RGBA to BGR
   const input = cv.blobFromImage(
     matPad,
     1 / 255.0, // normalize
@@ -111,8 +103,6 @@ const preprocessing = (source, modelWidth, modelHeight, isVideo) => {
   
   // release mat opencv
   // mat.delete();
-  // matC3.delete();
-  // matPad.delete();
-  // console.log(input)
+  matPad.delete();
   return [input, xRatio, yRatio];
 };
