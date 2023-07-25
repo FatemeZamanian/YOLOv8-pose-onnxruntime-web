@@ -86,6 +86,7 @@ const App = () => {
     );
 
     const yolov8 = await InferenceSession.create(arrBufNet);
+  
 
     const arrBufNMS = await download(
       `${baseModelURL}/modified_nms-yolov8.onnx`, // url
@@ -100,6 +101,7 @@ const App = () => {
       new Float32Array(modelInputShape.reduce((a, b) => a * b)),
       modelInputShape
     );
+    //multi thread 
 
     await yolov8.run({ images: tensor });
 
