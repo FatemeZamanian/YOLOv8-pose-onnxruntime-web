@@ -182,6 +182,9 @@ const App = () => {
               imageRef.current.src = "#";
               URL.revokeObjectURL(image);
               setImage(null);
+              //clear canvas
+              const ctx = canvasRef.current.getContext("2d");
+              ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
             }}
           >
             Close image
