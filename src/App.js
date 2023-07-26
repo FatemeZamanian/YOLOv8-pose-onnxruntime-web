@@ -27,6 +27,7 @@ const App = () => {
     }
     let video = document.getElementById("vid");
     let canvas = document.getElementById("canvas");
+    let time_element = document.getElementById("time");
     video.width = 640;
     video.height = 640;
     navigator.mediaDevices
@@ -46,8 +47,12 @@ const App = () => {
               return;
             }
 
+            let start = Date.now();
             cap.read(src);
             detectImage(src, canvas, session, topk, iouThreshold, scoreThreshold, modelInputShape, true);
+            let end = Date.now();
+            let time = end - start;
+            time_element.innerHTML = "Time: " + time + "ms";
 
           } catch (err) {
             alert(err);
@@ -78,7 +83,15 @@ const App = () => {
       ["Loading YOLOv8 Pose model", setLoading] // logger
     );
 
-    let yolov8 = await InferenceSession.create(arrBufNet, { backendHint: 'webgl', setNumThreads: 4, intra_op_num_threads: 4, inter_op_num_threads: 4 });
+    let yolov8 = await InferenceSession.create(arrBufNet, { 
+      // backendHint: 'webgl',
+      // setNumThreads: 4, 
+      // enableCpuMemArena: true,
+      // executionMode: "parallel",
+      intraOpNumThreads: 4, 
+      interOpNumThreads: 4,
+      // graphOptimizationLevel: "all",
+      });
 
     const arrBufNMS = await download(
       `${baseModelURL}/modified_nms-yolov8.onnx`, // url
@@ -110,6 +123,7 @@ const App = () => {
       )}
       <div className="header">
         <h1>YOLOv8 Pose Detection App</h1>
+        <h4 id="time"></h4>
         <p>
           YOLOv8 pose detection application live on browser powered by{" "}
           <code>onnxruntime-web</code>
