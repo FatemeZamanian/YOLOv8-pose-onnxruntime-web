@@ -5,6 +5,7 @@ import Loader from "./components/loader";
 import { detectImage } from "./utils/detect";
 import { download } from "./utils/download";
 import "./style/App.css";
+let streaming = "i"; // streaming state
 
 const App = () => {
   const [session, setSession] = useState(null);
@@ -14,16 +15,17 @@ const App = () => {
   const imageRef = useRef(null);
   const canvasRef = useRef(null);
   const videoRef = useRef(null);
-  let [streaming] = useState(false); // streaming state
+  
+  console.log(streaming)
 
   const onClickVideoStream = () => {
     console.log(streaming)
     // streaming =  streaming ? !streaming : streaming
-    if (streaming === true) {
-      streaming = false;
+    if (streaming === "i") {
+      streaming = "camera";
     }
     else {
-      streaming = true;
+      streaming = "i";
     }
     let video = document.getElementById("vid");
     let canvas = document.getElementById("canvas");
