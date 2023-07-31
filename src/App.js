@@ -5,7 +5,7 @@ import Loader from "./components/loader";
 import { detectImage } from "./utils/detect";
 import { download } from "./utils/download";
 import "./style/App.css";
-let streaming = "i"; // streaming state
+
 
 const App = () => {
   const [session, setSession] = useState(null);
@@ -15,57 +15,81 @@ const App = () => {
   const imageRef = useRef(null);
   const canvasRef = useRef(null);
   const videoRef = useRef(null);
+  let streaming = null;
+  let processVideoInterval;
   
-  console.log(streaming)
-
   const onClickVideoStream = () => {
-    console.log(streaming)
-    // streaming =  streaming ? !streaming : streaming
-    if (streaming === "i") {
-      streaming = "camera";
-    }
-    else {
-      streaming = "i";
-    }
     let video = document.getElementById("vid");
     let canvas = document.getElementById("canvas");
     let time_element = document.getElementById("time");
-    video.width = 640;
-    video.height = 640;
-    navigator.mediaDevices
-      .getUserMedia({ video: true, audio: false })
-      .then(function (stream) {
-        video.srcObject = stream;
-        video.play();
+    let button_webcam_element = document.getElementById("btn-webcam");
+    
+    if (streaming == null) {
+      streaming = "camera";
+    
+      video.style.display = "block";
+      canvas.style.display = "block";
 
-        let src = new cv.Mat(640, 640, cv.CV_8UC4);
-        let cap = new cv.VideoCapture(video);
+      video.width = 640;
+      video.height = 640;
+      navigator.mediaDevices
+        .getUserMedia({ video: true, audio: false })
+        .then(function (stream) {
+          video.srcObject = stream;
+          video.play();
 
-        async function processVideo() {
-          try {
-            if (!streaming) {
-              // clean and stop.
-              src.delete();
-              return;
+          let src = new cv.Mat(640, 640, cv.CV_8UC4);
+          let cap = new cv.VideoCapture(video);
+
+          async function processVideo() {
+            try {
+              if (!streaming) {
+                // clean and stop.
+                src.delete();
+                return;
+              }
+
+              let start = Date.now();
+              cap.read(src);
+              detectImage(src, canvas, session, topk, iouThreshold, scoreThreshold, modelInputShape, true);
+              let end = Date.now();
+              let time = end - start;
+              time_element.innerHTML = "Time: " + time + "ms";
+
+            } catch (err) {
+              alert(err);
             }
-
-            let start = Date.now();
-            cap.read(src);
-            detectImage(src, canvas, session, topk, iouThreshold, scoreThreshold, modelInputShape, true);
-            let end = Date.now();
-            let time = end - start;
-            time_element.innerHTML = "Time: " + time + "ms";
-
-          } catch (err) {
-            alert(err);
           }
-        }
 
-        setInterval(processVideo, 10);
-      })
-      .catch(function (err) {
-        console.log("An error occurred! " + err);
+          processVideoInterval = setInterval(processVideo, 10);
+        })
+        .catch(function (err) {
+          console.log("An error occurred! " + err);
+        });
+    }
+    else {
+      streaming = null;
+      // close webcam
+      clearInterval(processVideoInterval);
+      video.srcObject.getTracks().forEach(function (track) {
+        track.stop();
       });
+      // video.srcObject = null;
+      video.style.display = "none";
+      // canvas.style.display = "none";
+
+      // clean canvas
+      // let ctx = canvas.getContext("2d");
+      // ctx.clearRect(0, 0, canvas.width, canvas.height);
+      // const ctx = canvasRef.current.getContext("2d");
+      // ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
+
+      // clean time
+      time_element.innerHTML = "Time: 0ms";
+    }
+
+    button_webcam_element.innerHTML = (streaming === "camera" ? "Close" : "Open") + " Webcam";
+
   };
 
   // Configs
@@ -125,7 +149,7 @@ const App = () => {
       )}
       <div className="header">
         <h1>YOLOv8 Pose Detection App</h1>
-        <h4 id="time"></h4>
+        <h4 id="time">0</h4>
         <p>
           YOLOv8 pose detection application live on browser powered by{" "}
           <code>onnxruntime-web</code>
@@ -206,11 +230,8 @@ const App = () => {
             Close image
           </button>
         )}
-        <button
-          onClick={onClickVideoStream}
-
-        >
-          {streaming === "camera" ? "Close" : "Open"} Webcam
+        <button id="btn-webcam" onClick={onClickVideoStream}>
+          Open Webcam
         </button>
       </div>
     </div>
