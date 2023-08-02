@@ -44,7 +44,7 @@ size       : 13 Mb
 
 ONNX model to perform NMS operator [CUSTOM].
 
-[![nms-yolov8pose.onnx](https://img.shields.io/badge/nms--yolov8.onnx-black?logo=onnx)](https://netron.app/?url=https://raw.githubusercontent.com/FatemeZamanian/yolov8-pose-onnxruntime-web/master/public/model/modified_nms-yolov8.onnx)
+[![nms-yolov8pose.onnx](https://img.shields.io/badge/nms--yolov8.onnx-black?logo=onnx)](https://netron.app/?url=https://raw.githubusercontent.com/FatemeZamanian/yolov8-pose-onnxruntime-web/master/public/model/modified-nms-yolov8-pose.onnx)
 
 ## Use another model
 
