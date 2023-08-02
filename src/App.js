@@ -48,7 +48,7 @@ const App = () => {
                 src.delete();
                 return;
               }
-
+              video.style.display = "block";
               let start = Date.now();
               cap.read(src);
               detectImage(src, canvas, session, topk, iouThreshold, scoreThreshold, modelInputShape, true);
@@ -70,12 +70,12 @@ const App = () => {
     else {
       streaming = null;
       // close webcam
+      video.style.display = "none";
       clearInterval(processVideoInterval);
       video.srcObject.getTracks().forEach(function (track) {
         track.stop();
       });
       // video.srcObject = null;
-      video.style.display = "none";
       // canvas.style.display = "none";
 
       // clean canvas
@@ -178,7 +178,7 @@ const App = () => {
           }}
         />
 
-        <video id="vid" ref={videoRef} autoPlay playsInline muted style={{ inlineSize: "fit-content", display: image ? "none" : "block" }} />
+        <video id="vid" ref={videoRef} autoPlay playsInline muted style={{ inlineSize: "fit-content" }} />
 
         <canvas
           id="canvas"
