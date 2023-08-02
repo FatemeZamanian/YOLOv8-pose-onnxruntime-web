@@ -1,4 +1,4 @@
-import cv, { getThreadNum, setNumThreads } from "@techstark/opencv-js";
+import cv from "@techstark/opencv-js";
 import { Tensor } from "onnxruntime-web";
 import { renderBoxes } from "./renderBox";
 

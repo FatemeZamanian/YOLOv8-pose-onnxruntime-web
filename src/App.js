@@ -75,15 +75,6 @@ const App = () => {
       video.srcObject.getTracks().forEach(function (track) {
         track.stop();
       });
-      // video.srcObject = null;
-      // canvas.style.display = "none";
-
-      // clean canvas
-      // let ctx = canvas.getContext("2d");
-      // ctx.clearRect(0, 0, canvas.width, canvas.height);
-      // const ctx = canvasRef.current.getContext("2d");
-      // ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
-
       // clean time
       time_element.innerHTML = "Time: 0ms";
     }
@@ -109,15 +100,7 @@ const App = () => {
       ["Loading YOLOv8 Pose model", setLoading] // logger
     );
 
-    let yolov8 = await InferenceSession.create(arrBufNet, { 
-      // backendHint: 'webgl',
-      // setNumThreads: 4, 
-      // enableCpuMemArena: true,
-      // executionMode: "parallel",
-      intraOpNumThreads: 4, 
-      interOpNumThreads: 4,
-      // graphOptimizationLevel: "all",
-      });
+    let yolov8 = await InferenceSession.create(arrBufNet);
 
     const arrBufNMS = await download(
       `${baseModelURL}/modified_nms-yolov8.onnx`, // url
@@ -132,7 +115,6 @@ const App = () => {
       new Float32Array(modelInputShape.reduce((a, b) => a * b)),
       modelInputShape
     );
-    //multi thread 
 
     await yolov8.run({ images: tensor });
 
