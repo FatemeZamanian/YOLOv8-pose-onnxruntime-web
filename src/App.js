@@ -86,7 +86,7 @@ const App = () => {
   // Configs
   const modelName = "yolov8n-pose.onnx";
   const modelInputShape = [1, 3, 640, 640];
-  const topk = 1;
+  const topk = 50;
   const iouThreshold = 0.45;
   const scoreThreshold = 0.25;
 
@@ -103,7 +103,7 @@ const App = () => {
     let yolov8 = await InferenceSession.create(arrBufNet);
 
     const arrBufNMS = await download(
-      `${baseModelURL}/modified-nms-yolov8-pose`, // url
+      `${baseModelURL}/modified-nms-yolov8-pose.onnx`, // url
       ["Loading NMS model", setLoading] // logger
     );
     const nms = await InferenceSession.create(arrBufNMS);
